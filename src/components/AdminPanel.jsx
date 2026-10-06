@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { usePortfolio } from '../context/PortfolioContext';
 import { Settings, Lock, Unlock, LogOut, Save, RefreshCw } from 'lucide-react';
 
 export default function AdminPanel() {
     const {
-        data,
         isAdmin,
         isEditMode,
         login,
@@ -16,23 +15,36 @@ export default function AdminPanel() {
 
     const [password, setPassword] = useState('');
     const [isOpen, setIsOpen] = useState(false);
-    const [loginError, setLoginError] = useState(false);
+    const [loginError, setLoginError] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        const success = login(password);
-        if (success) {
-            setPassword('');
-            setLoginError(false);
-        } else {
-            setLoginError(true);
+        setLoginError('');
+        try {
+            const success = await login(password);
+            if (success) {
+                setPassword('');
+            } else {
+                setLoginError('Access Denied');
+            }
+        } catch (error) {
+            setLoginError(error.message);
+        }
+    };
+
+    const handleLogout = async () => {
+        setLoginError('');
+        try {
+            await logout();
+        } catch (error) {
+            setLoginError(error.message);
         }
     };
 
     return (
         <>
             {/* Toggle Button (Hidden/Subtle) */}
-            <motion.div
+            <div
                 style={{
                     position: 'fixed',
                     bottom: '1rem',
@@ -56,7 +68,7 @@ export default function AdminPanel() {
                 >
                     <Settings size={20} />
                 </button>
-            </motion.div>
+            </div>
 
             {/* Admin Modal/Panel */}
             <AnimatePresence>
@@ -84,7 +96,7 @@ export default function AdminPanel() {
                                 SYSTEM ADMIN
                             </h3>
                             {isAdmin && (
-                                <button onClick={logout} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer' }}>
+                                <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#ff4444', cursor: 'pointer' }}>
                                     <LogOut size={18} />
                                 </button>
                             )}
@@ -108,7 +120,7 @@ export default function AdminPanel() {
                                             borderRadius: '4px'
                                         }}
                                     />
-                                    {loginError && <span style={{ color: '#ff4444', fontSize: '0.7rem' }}>Access Denied</span>}
+                                    {loginError && <span style={{ color: '#ff4444', fontSize: '0.7rem' }}>{loginError}</span>}
                                 </div>
                                 <button
                                     type="submit"
@@ -120,6 +132,7 @@ export default function AdminPanel() {
                             </form>
                         ) : (
                             <div>
+                                {loginError && <div style={{ color: '#ff4444', fontSize: '0.8rem', marginBottom: '0.75rem' }}>{loginError}</div>}
                                 <div style={{ marginBottom: '1rem', padding: '0.5rem', background: 'rgba(0,255,0,0.1)', border: '1px solid #00ff00', borderRadius: '4px', fontSize: '0.8rem', color: '#00ff00', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                     <Unlock size={14} /> ACCESS GRANTED
                                 </div>

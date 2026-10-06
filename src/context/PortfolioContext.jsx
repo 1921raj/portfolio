@@ -21,23 +21,58 @@ export function PortfolioProvider({ children }) {
     const [isAdmin, setIsAdmin] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
 
+    useEffect(() => {
+        let active = true;
+        fetch('/api/admin/session')
+            .then(async response => {
+                if (!response.ok) {
+                    throw new Error('Unable to verify the admin session.');
+                }
+                return response.json();
+            })
+            .then(({ authenticated }) => {
+                if (active && authenticated) {
+                    setIsAdmin(true);
+                    setIsEditMode(true);
+                }
+            })
+            .catch(error => {
+                console.error('Failed to verify admin session', error);
+            });
+
+        return () => {
+            active = false;
+        };
+    }, []);
+
     // Auto-save to localStorage whenever data changes
     useEffect(() => {
         localStorage.setItem('portfolio_data_v1', JSON.stringify(data));
     }, [data]);
 
-    // Admin Login
-    const login = (password) => {
-        // Simple frontend logic - in real app use backend
-        if (password === 'admin123') { // Default password for demo
+    const login = async (password) => {
+        const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password }),
+        });
+        const result = await response.json();
+        if (response.ok && result.authenticated) {
             setIsAdmin(true);
             setIsEditMode(true);
             return true;
         }
+        if (response.status >= 500) {
+            throw new Error(result.error || 'Admin authentication is unavailable.');
+        }
         return false;
     };
 
-    const logout = () => {
+    const logout = async () => {
+        const response = await fetch('/api/admin/logout', { method: 'POST' });
+        if (!response.ok) {
+            throw new Error('Unable to end the admin session.');
+        }
         setIsAdmin(false);
         setIsEditMode(false);
     };

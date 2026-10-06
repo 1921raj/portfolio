@@ -84,13 +84,21 @@ cd PORTFOLIO
 npm install
 ```
 
-3. **Start development server**
+3. **Configure admin authentication** (optional)
+
+Copy `.env.example` to `.env.local` and set a unique, strong `ADMIN_PASSWORD` and an `ADMIN_SESSION_SECRET` with at least 32 bytes of random data (for example, generate one with `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64url'))"`). Keep `.env.local` private and never use a `VITE_` prefix for these values. The same variables must be configured in the Vercel project's server-side Environment Variables.
+
+4. **Start development server**
 ```bash
 npm run dev
 ```
 
-4. **Open in browser**
+5. **Open in browser**
 Navigate to `http://localhost:5173`
+
+The Vite dev server and preview server provide local versions of the `/api/admin/*` authentication routes. On Vercel, those routes run as serverless functions. Without the environment variables, admin login is unavailable.
+
+Admin authentication only controls the client UI. Portfolio edits are still stored in each visitor's browser `localStorage`; they are not sent to or protected by a server. Do not treat this UI gate as authorization for shared or persistent data.
 
 ### Build for Production
 
