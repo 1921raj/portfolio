@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePortfolio } from '../context/PortfolioContext';
 import { Settings, Lock, Unlock, LogOut, Save, RefreshCw } from 'lucide-react';
+
+const MotionDiv = motion.div;
 
 export default function AdminPanel() {
     const {
@@ -73,7 +75,7 @@ export default function AdminPanel() {
             {/* Admin Modal/Panel */}
             <AnimatePresence>
                 {isOpen && (
-                    <motion.div
+                    <MotionDiv
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -50 }}
@@ -203,7 +205,7 @@ export default function AdminPanel() {
                                 </div>
                             </div>
                         )}
-                    </motion.div>
+                    </MotionDiv>
                 )}
             </AnimatePresence>
         </>
